@@ -2,8 +2,8 @@
   <div class="upload">
     <div class="text" ref="choosePhoto">
       <span>将文件拖拽此处,或</span>
-      <span @click="inputFile()" class="cilPhoto"><i class="el-icon-upload"></i>点击上传图片</span>
-      <input type="file" multiple class="uploadInput" style="display: none" id="file" />
+      <span @click="inputFile" class="cliPhoto" ><i class="el-icon-upload"></i>点击上传图片</span>
+      <input type="file" multiple class="uploadInput" @change="clickPhoto" style="display: none" id="file" ref="inputer" />
     </div>
     <div class="filePhoto" v-for="(item, index) in fileData" :key="index">
       <div class="showFile">
@@ -21,15 +21,17 @@
 </template>
 
 <script>
+
 export default {
   name: "upload",
   data() {
     return {
       imgArr: [],
-      fileData: [],
-      fileurl: [],
+      fileData: [], //图片文件
+      fileurl: [], //图片路径
       currentIndex: 0,
-      fileArray: []
+      fileArray: [], //图片路径数组
+      postUrl: "" //需要上传到的地址
     };
   },
   mounted() {
@@ -53,6 +55,16 @@ export default {
       let file = document.getElementById("file");
       file.click();
     },
+    //点击实现图片上传
+    clickPhoto() {
+      let inputDOM = this.$refs.inputer;
+      // 通过DOM取文件数据
+      let fileData = inputDOM.files;
+      // console.log("file:" + inputDOM.files)
+      console.log(fileData);
+      this.uploadFile(fileData);
+    },
+    //拖拽实现图片上传
     choose(e) {
       e.stopPropagation();
       e.preventDefault(); //必填字段
@@ -71,15 +83,15 @@ export default {
           file[i].type === "video/mp4" || file[i].type === "video/ogg";
         if (file[i].type.indexOf("image") === 0) {
           //如果是图片
-          // console.log(file[i])
           this.fileurl[i] = window.URL.createObjectURL(file[i]); //创建一个url连接,供src属性引用
           this.fileArray.push(this.fileurl[i]); //把url链接压入到fileArray数组中，当用户需要查看时，再调用fileArray
-          // console.log(this.fileArray);
         } else if (video_type) {
           alert("不支持此类型文件");
         }
         fileJson.fileText = file[i].name; //图片名字
         this.fileData.push(fileJson); //把图片压入到fileData数组里
+        // this.fileData.splice(this.fileData.length, 0, fileJson)
+        console.log("..." + this.fileData)
       }
       // console.log(this.fileData)
     },
@@ -91,7 +103,9 @@ export default {
         type: "warning"
       })
         .then(() => {
+          //都要删除
           this.fileData.splice(index, 1);
+          this.fileArray.splice(index, 1);
           this.$message({
             type: "success",
             message: "删除成功!"
@@ -129,7 +143,7 @@ export default {
   align-items: center;
 }
 
-.upload .text .cilPhoto {
+.upload .text .cliPhoto {
   color: cadetblue;
   cursor: pointer;
 }
